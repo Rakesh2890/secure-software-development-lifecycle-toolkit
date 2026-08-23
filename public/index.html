@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Secure Task Manager</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #eef2ff,
+                    #f8fafc
+                );
+
+            color: #172033;
+
+            padding: 40px 20px;
+        }
+
+        .container {
+
+            width: 100%;
+
+            max-width: 850px;
+
+            margin: auto;
+        }
+
+        .header {
+
+            text-align: center;
+
+            margin-bottom: 30px;
+        }
+
+        .logo {
+
+            width: 70px;
+
+            height: 70px;
+
+            margin: 0 auto 15px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #6366f1,
+                    #8b5cf6
+                );
+
+            color: white;
+
+            font-size: 35px;
+
+            font-weight: bold;
+
+            box-shadow:
+                0 15px 35px
+                rgba(99, 102, 241, 0.25);
+        }
+
+        h1 {
+
+            font-size: 36px;
+
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+
+            color: #64748b;
+
+            font-size: 16px;
+        }
+
+        .card {
+
+            background: white;
+
+            border-radius: 22px;
+
+            padding: 30px;
+
+            box-shadow:
+                0 20px 60px
+                rgba(15, 23, 42, 0.10);
+        }
+
+        .task-form {
+
+            display: flex;
+
+            gap: 12px;
+
+            margin-bottom: 15px;
+        }
+
+        .task-input {
+
+            flex: 1;
+
+            padding: 15px;
+
+            border: 2px solid #e2e8f0;
+
+            border-radius: 12px;
+
+            font-size: 16px;
+
+            outline: none;
+        }
+
+        .task-input:focus {
+
+            border-color: #6366f1;
+        }
+
+        .add-button {
+
+            padding: 0 24px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background: #6366f1;
+
+            color: white;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .add-button:hover {
+
+            background: #4f46e5;
+        }
+
+        .message {
+
+            height: 25px;
+
+            text-align: center;
+
+            font-size: 14px;
+        }
+
+        .success {
+
+            color: #16a34a;
+        }
+
+        .error {
+
+            color: #dc2626;
+        }
+
+        .stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 15px;
+
+            margin:
+                20px 0 30px;
+        }
+
+        .stat {
+
+            padding: 20px;
+
+            text-align: center;
+
+            background: #f8fafc;
+
+            border:
+                1px solid #e2e8f0;
+
+            border-radius: 15px;
+        }
+
+        .stat-number {
+
+            font-size: 28px;
+
+            font-weight: bold;
+        }
+
+        .stat-label {
+
+            color: #64748b;
+
+            font-size: 13px;
+
+            margin-top: 5px;
+        }
+
+        .toolbar {
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            margin-bottom: 15px;
+        }
+
+        .toolbar h2 {
+
+            font-size: 20px;
+        }
+
+        .filter {
+
+            padding: 9px 12px;
+
+            border:
+                1px solid #dbe2ea;
+
+            border-radius: 9px;
+
+            background: white;
+
+            cursor: pointer;
+        }
+
+        .task-list {
+
+            list-style: none;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+        }
+
+        .task {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 16px;
+
+            border:
+                1px solid #e2e8f0;
+
+            border-radius: 14px;
+
+            background: white;
+
+            transition: 0.2s;
+        }
+
+        .task:hover {
+
+            border-color: #a5b4fc;
+
+            transform: translateY(-1px);
+        }
+
+        .checkbox {
+
+            width: 20px;
+
+            height: 20px;
+
+            cursor: pointer;
+
+            accent-color: #6366f1;
+        }
+
+        .task-title {
+
+            flex: 1;
+
+            word-break: break-word;
+        }
+
+        .completed
+        .task-title {
+
+            text-decoration: line-through;
+
+            color: #94a3b8;
+        }
+
+        .delete-button {
+
+            border: none;
+
+            background: #fee2e2;
+
+            color: #dc2626;
+
+            padding: 9px 13px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+        }
+
+        .delete-button:hover {
+
+            background: #fecaca;
+        }
+
+        .empty {
+
+            text-align: center;
+
+            padding: 45px;
+
+            color: #94a3b8;
+        }
+
+        .empty-icon {
+
+            font-size: 42px;
+
+            margin-bottom: 10px;
+        }
+
+        .footer {
+
+            text-align: center;
+
+            margin-top: 20px;
+
+            color: #94a3b8;
+
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+
+            .task-form {
+
+                flex-direction: column;
+            }
+
+            .add-button {
+
+                height: 48px;
+            }
+
+            .stats {
+
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+
+                font-size: 28px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="header">
+
+        <div class="logo">
+            ✓
+        </div>
+
+        <h1>
+            Secure Task Manager
+        </h1>
+
+        <p class="subtitle">
+            Organize your work. Track your progress.
+        </p>
+
+    </header>
+
+
+    <main class="card">
+
+        <form
+            id="taskForm"
+            class="task-form"
+        >
+
+            <input
+                id="taskInput"
+                class="task-input"
+                type="text"
+                maxlength="200"
+                placeholder="What needs to be done?"
+                autocomplete="off"
+                required
+            >
+
+            <button
+                type="submit"
+                class="add-button"
+            >
+                + Add Task
+            </button>
+
+        </form>
+
+
+        <div
+            id="message"
+            class="message"
+        ></div>
+
+
+        <section class="stats">
+
+            <div class="stat">
+
+                <div
+                    id="totalTasks"
+                    class="stat-number"
+                >
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Total Tasks
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    id="activeTasks"
+                    class="stat-number"
+                >
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Active
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    id="completedTasks"
+                    class="stat-number"
+                >
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Completed
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="toolbar">
+
+            <h2>
+                My Tasks
+            </h2>
+
+            <select
+                id="filter"
+                class="filter"
+            >
+
+                <option value="all">
+                    All Tasks
+                </option>
+
+                <option value="active">
+                    Active
+                </option>
+
+                <option value="completed">
+                    Completed
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <ul
+            id="taskList"
+            class="task-list"
+        ></ul>
+
+    </main>
+
+
+    <footer class="footer">
+
+        Secure Task Manager • SSDLC Sample Application
+
+    </footer>
+
+</div>
+
+
+<script>
+
+const API = "/api";
+
+let tasks = [];
+
+const form =
+    document.getElementById("taskForm");
+
+const input =
+    document.getElementById("taskInput");
+
+const list =
+    document.getElementById("taskList");
+
+const filter =
+    document.getElementById("filter");
+
+const total =
+    document.getElementById("totalTasks");
+
+const active =
+    document.getElementById("activeTasks");
+
+const completed =
+    document.getElementById("completedTasks");
+
+const message =
+    document.getElementById("message");
+
+
+function showMessage(text, type) {
+
+    message.textContent = text;
+
+    message.className =
+        "message " + type;
+
+    setTimeout(() => {
+
+        message.textContent = "";
+
+        message.className =
+            "message";
+
+    }, 2000);
+}
+
+
+async function loadTasks() {
+
+    try {
+
+        const response =
+            await fetch(`${API}/tasks`);
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to load tasks"
+            );
+        }
+
+        tasks =
+            await response.json();
+
+        render();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Backend connection failed",
+            "error"
+        );
+    }
+}
+
+
+function render() {
+
+    list.innerHTML = "";
+
+    total.textContent =
+        tasks.length;
+
+    const completedCount =
+        tasks.filter(
+            task => task.completed
+        ).length;
+
+    active.textContent =
+        tasks.length - completedCount;
+
+    completed.textContent =
+        completedCount;
+
+
+    let visible =
+        tasks;
+
+    if (filter.value === "active") {
+
+        visible =
+            tasks.filter(
+                task => !task.completed
+            );
+    }
+
+    if (filter.value === "completed") {
+
+        visible =
+            tasks.filter(
+                task => task.completed
+            );
+    }
+
+
+    if (visible.length === 0) {
+
+        list.innerHTML = `
+            <li class="empty">
+
+                <div class="empty-icon">
+                    📋
+                </div>
+
+                <h3>
+                    No tasks yet
+                </h3>
+
+                <p>
+                    Add your first task above.
+                </p>
+
+            </li>
+        `;
+
+        return;
+    }
+
+
+    visible.forEach(task => {
+
+        const item =
+            document.createElement("li");
+
+        item.className =
+            "task";
+
+
+        if (task.completed) {
+
+            item.classList.add(
+                "completed"
+            );
+        }
+
+
+        const checkbox =
+            document.createElement(
+                "input"
+            );
+
+        checkbox.type =
+            "checkbox";
+
+        checkbox.className =
+            "checkbox";
+
+        checkbox.checked =
+            task.completed;
+
+
+        checkbox.addEventListener(
+            "change",
+            () => updateTask(
+                task.id,
+                checkbox.checked
+            )
+        );
+
+
+        const title =
+            document.createElement(
+                "span"
+            );
+
+        title.className =
+            "task-title";
+
+        title.textContent =
+            task.title;
+
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+        button.className =
+            "delete-button";
+
+        button.textContent =
+            "Delete";
+
+
+        button.addEventListener(
+            "click",
+            () => deleteTask(task.id)
+        );
+
+
+        item.appendChild(
+            checkbox
+        );
+
+        item.appendChild(
+            title
+        );
+
+        item.appendChild(
+            button
+        );
+
+        list.appendChild(
+            item
+        );
+
+    });
+}
+
+
+form.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const title =
+            input.value.trim();
+
+
+        if (!title) {
+
+            showMessage(
+                "Enter a task first",
+                "error"
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API}/tasks`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                title
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Unable to add task"
+                );
+            }
+
+
+            input.value = "";
+
+            showMessage(
+                "Task added successfully",
+                "success"
+            );
+
+            await loadTasks();
+
+            input.focus();
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                error.message,
+                "error"
+            );
+        }
+
+    }
+);
+
+
+async function updateTask(
+    id,
+    completedValue
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/tasks/${id}`,
+                {
+                    method: "PATCH",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            completed:
+                                completedValue
+                        })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to update task"
+            );
+        }
+
+
+        await loadTasks();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+        await loadTasks();
+    }
+}
+
+
+async function deleteTask(id) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/tasks/${id}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to delete task"
+            );
+        }
+
+
+        showMessage(
+            "Task deleted",
+            "success"
+        );
+
+        await loadTasks();
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+filter.addEventListener(
+    "change",
+    render
+);
+
+
+loadTasks();
+
+</script>
+
+</body>
+
+</html>
