@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Secure SDLC Pipeline
 
 on:
   push:
@@ -9,17 +9,20 @@ on:
       - main
 
 jobs:
-  build-and-check:
+  security-analysis:
+    name: Build and Security Analysis
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -27,3 +30,8 @@ jobs:
 
       - name: Check JavaScript syntax
         run: node --check server.js
+
+      - name: SonarQube SAST Scan
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
