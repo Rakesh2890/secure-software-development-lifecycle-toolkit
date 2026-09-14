@@ -37,20 +37,23 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: OWASP Dependency-Check SCA
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           mkdir -p dependency-check-reports
 
           docker run --rm \
+            -e NVD_API_KEY="$NVD_API_KEY" \
             -v "${{ github.workspace }}:/src" \
             -v "${{ github.workspace }}/dependency-check-reports:/report" \
             owasp/dependency-check:latest \
             --scan /src \
             --project "secure-task-manager" \
-            --format "HTML" \
-            --format "JSON" \
+            --format HTML \
+            --format JSON \
             --out /report \
-            --exclude /src/node_modules
-
+            --exclude /src/node_modules \
+            --nvdApiKey "$NVD_API_KEY"
       - name: Upload OWASP Dependency-Check reports
         if: always()
         uses: actions/upload-artifact@v4
