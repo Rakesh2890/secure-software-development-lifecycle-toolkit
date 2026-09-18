@@ -49,10 +49,14 @@ jobs:
             --exclude .git
             --exclude dependency-check-reports
 
-
       - name: Upload OWASP Dependency-Check report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: owasp-dependency-check-report
           path: dependency-check-reports/
+
+      - name: Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
