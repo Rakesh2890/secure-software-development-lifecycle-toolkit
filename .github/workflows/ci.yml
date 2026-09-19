@@ -119,3 +119,10 @@ jobs:
         with:
           name: trivy-container-report
           path: trivy-report.html
+
+      - name: Upload Trivy JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-container-report
+          path: trivy-report.json
