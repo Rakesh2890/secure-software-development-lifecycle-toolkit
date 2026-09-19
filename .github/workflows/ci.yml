@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   security-analysis:
     name: Build and Security Analysis
@@ -31,11 +35,17 @@ jobs:
       - name: Check JavaScript syntax
         run: node --check server.js
 
+      # =========================
+      # SAST - SonarQube
+      # =========================
       - name: SonarQube SAST Scan
         uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      # =========================
+      # SCA - OWASP Dependency-Check
+      # =========================
       - name: OWASP Dependency-Check SCA
         uses: dependency-check/Dependency-Check_Action@main
         with:
@@ -56,7 +66,56 @@ jobs:
           name: owasp-dependency-check-report
           path: dependency-check-reports/
 
+      # =========================
+      # Secret Scanning - Gitleaks
+      # =========================
       - name: Gitleaks Secret Scan
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # =========================
+      # Docker Build
+      # =========================
+      - name: Build Docker image
+        run: docker build -t secure-task-manager:1.2 .
+
+      # =========================
+      # Container Security - Trivy
+      # =========================
+      - name: Trivy Container Scan - SARIF
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "secure-task-manager:1.2"
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          ignore-unfixed: false
+
+      # Upload Trivy SARIF results to GitHub Code Scanning
+      - name: Upload Trivy SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-container-scan
+
+      # =========================
+      # Trivy HTML Report
+      # =========================
+      - name: Trivy Container Scan - HTML
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "secure-task-manager:1.2"
+          format: "template"
+          template: "@/contrib/html.tpl"
+          output: "trivy-report.html"
+          severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          ignore-unfixed: false
+
+      - name: Upload Trivy HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-container-report
+          path: trivy-report.html
