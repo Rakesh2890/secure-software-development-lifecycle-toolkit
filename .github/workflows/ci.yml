@@ -108,7 +108,7 @@ jobs:
         with:
           image-ref: "secure-task-manager:1.2"
           format: "template"
-          template: "@/contrib/html.tpl"
+          template: "@/home/runner/.local/bin/trivy-bin/contrib/html.tpl"
           output: "trivy-report.html"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
           ignore-unfixed: false
@@ -119,10 +119,3 @@ jobs:
         with:
           name: trivy-container-report
           path: trivy-report.html
-
-      - name: Upload Trivy JSON report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-container-report
-          path: trivy-report.json
