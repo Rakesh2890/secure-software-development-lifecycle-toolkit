@@ -1,0 +1,14 @@
+node_modules
+.git
+.github
+
+.env
+.env.*
+*.log
+
+dependency-check-reports
+trivy-report.html
+trivy-report.json
+coverage
+
+README.md

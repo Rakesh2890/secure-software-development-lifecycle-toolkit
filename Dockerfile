@@ -1,14 +1,17 @@
 FROM node:24-alpine
 
-RUN npm install -g npm@12.0.2
-
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts \
+    && npm cache clean --force
+RUN rm -rf /usr/local/lib/node_modules/npm
 
-COPY . .
+COPY --chown=node:node server.js ./
+COPY --chown=node:node public ./public
+
+USER node
 
 EXPOSE 3001
 
