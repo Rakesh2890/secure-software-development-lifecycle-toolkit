@@ -154,15 +154,15 @@ jobs:
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://127.0.0.1:3001 \
-            -r /zap/wrk/zap-report.html \
-            -J /zap/wrk/zap-report.json \
-            -x /zap/wrk/zap-report.xml \
-            -w /zap/wrk/zap-report.md \
+            -r zap-report.html \
+            -J zap-report.json \
+            -x zap-report.xml \
+            -w zap-report.md \
             -I || true
 
           echo "Generated ZAP reports:"
           find zap-reports -maxdepth 1 -type f -print
-          
+
       - name: Check ZAP Reports
         if: always()
         run: |
