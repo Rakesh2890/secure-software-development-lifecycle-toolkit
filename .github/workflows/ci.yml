@@ -78,7 +78,7 @@ jobs:
       # Docker Build
       # =========================
       - name: Build Docker image
-        run: docker build -t secure-task-manager:1.2 .
+        run: docker build -t secure-task-manager:1.4 .
 
       # =========================
       # Container Security - Trivy
@@ -86,7 +86,7 @@ jobs:
       - name: Trivy Container Scan - SARIF
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "secure-task-manager:1.2"
+          image-ref: "secure-task-manager:1.4"
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
@@ -106,7 +106,7 @@ jobs:
       - name: Trivy Container Scan - HTML
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "secure-task-manager:1.2"
+          image-ref: "secure-task-manager:1.4"
           format: "template"
           template: "@/home/runner/.local/bin/trivy-bin/contrib/html.tpl"
           output: "trivy-report.html"
@@ -119,3 +119,56 @@ jobs:
         with:
           name: trivy-container-report
           path: trivy-report.html
+
+      - name: Start Application for DAST
+        run: |
+          docker rm -f dast-target 2>/dev/null || true
+
+          docker run -d \
+            --name dast-target \
+            -p 3001:3001 \
+            secure-task-manager:1.4
+
+          echo "Waiting for application to start..."
+
+          for i in {1..30}; do
+            if curl --fail http://localhost:3001/api/health; then
+              echo "Application is ready!"
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "Application failed to start"
+          docker logs dast-target
+          exit 1
+
+      - name: OWASP ZAP DAST Scan
+        run: |
+          mkdir -p zap-reports
+
+          docker run --rm \
+            --network host \
+            -v "${{ github.workspace }}/zap-reports:/zap/wrk/:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t http://127.0.0.1:3001 \
+            -r zap-report.html \
+            -J zap-report.json \
+            -x zap-report.xml \
+            -w zap-report.md \
+            -I || true
+
+      - name: Upload OWASP ZAP DAST Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owasp-zap-dast-reports
+          path: zap-reports/
+
+      - name: Stop DAST Application
+        if: always()
+        run: |
+          docker stop dast-target || true
+          docker rm dast-target || true
